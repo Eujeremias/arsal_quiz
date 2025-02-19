@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apresentação ARSAL - FORM</title>
+
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <!-- <script src="./questions.js" async></script> -->
+
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        button{
+            cursor: pointer;
+        }
+        
+        body{
+            /*background-color: black;*/
+            background-image: url("./img/img-background.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+
+            color: #fff;
+        
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container{
+            background-color: #121214;
+            width: 90%;
+            max-width: 800px;
+        
+            border: 2px solid #e1e1e6;
+            border-radius: 6px;
+            padding: 16px;
+            box-shadow: 0 0 2px 2px;
+        
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .questions-container{
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .question{
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .answers-container{
+            width: 100%;
+            display: grid;
+            /* Duas colunas de mesmo tamanho */
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .next-question{
+            margin-top: 20px;
+        }
+        
+        .button{
+            background-color: #4863f7;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            border: 0;
+            border-radius: 16px;
+            height: 48px;
+            padding: 0 32px;
+            transition: 0.5s;
+        }
+        
+        /* Botões que não estejam desabilitados não vão ter o hover */
+        .button:not(:disabled):hover{
+            filter: brightness(0.8)
+        }
+        
+        .answer:disabled{
+            cursor: not-allowed;
+        }
+        
+        .final-message{
+            font-size: 20px;
+            text-align: center;
+        
+        }
+        
+        .final-message span{
+            display: block;
+            margin-top: 8px;
+        }
+        
+        .hide{
+            display: none;
+        }
+        
+        .correct{
+            background-color: #049b48;
+        }
+        
+        .incorrect{
+            background-color: #a10101;
+        }
+    </style>
+
+    <title>Quiz JavaScript</title>
+</head>
+<body>
+    <div class="container">
+        <div class="questions-container hide">
+            <span class="question">Pergunte aqui?</span>
+            <div class="answers-container">
+                <button class="answer button">Resposta 1</button>
+                <button class="answer button">Resposta 2</button>
+                <button class="answer button">Resposta 3</button>
+                <button class="answer button">Resposta 4</button>
+            </div>
+        </div>
+        <div class="controls-container">
+            <button class="start-quiz button">Começar aqui</button>
+            <button class="next-question button hide">Próxima pergunta</button>
+        </div>
+
+        <script>
+            const $startGameButton = document.querySelector(".start-quiz")
+            const $questionsContainer = document.querySelector(".questions-container")
+            const $answersContainer = document.querySelector(".answers-container")
+            const $questionText = document.querySelector(".question")
+            const $container = document.querySelector(".container")
+            const $nextQuestionButton = document.querySelector(".next-question")
+
+            $startGameButton.addEventListener("click", startGame)
+            $nextQuestionButton.addEventListener("click", displayNextQuestion)
+
+            let currentQuestionIndex = 0
+            let totalCorrect = 0
+
+            const questions = [
+                {
+                    question: "O QUE SIGNIFICA ARSAL?",
+                    answers: [
+                        { text: "Agência Reguladora de Serviços Públicos de Alagoas", correct: true },
+                        { text: "Agência Relatora do Saneamento de Alagoas", correct: false }, // Correção de "Inderestadual" para "Interestadual"
+                        { text: "Agência Regrada dos Serviços Públicos de Alagoas", correct: false },
+                        { text: "Agência da Realeza de Alagoas", correct: false }
+                    ]
+                },
+                {
+                    question: "Quantos anos tem a ARSAL?",
+                    answers: [
+                        { text: "18", correct: false },
+                        { text: "20", correct: false },
+                        { text: "24", correct: true },
+                        { text: "13", correct: false }
+                    ]
+                },
+                {
+                    question: "ARSAL pertence é qual órgão?",
+                    answers: [
+                        { text: "Governo do Estado de Alagoas", correct: true },
+                        { text: "Prefeitura de Maceió", correct: false },
+                        { text: "Governo Federal", correct: false },
+                        { text: "Prefeitura de Arapiraca", correct: false }
+                    ]
+                }
+            ]
+
+            function startGame() {
+                $startGameButton.classList.add("hide")
+                $questionsContainer.classList.remove("hide")
+                displayNextQuestion()
+            }
+
+            function displayNextQuestion() {
+                resetState()
+
+                if(questions.length === currentQuestionIndex){
+                    return finishGame()
+                }
+
+                $questionText.textContent = questions[currentQuestionIndex].question
+                questions[currentQuestionIndex].answers.forEach(answer => {
+                    const newAnswer = document.createElement("button")
+                    newAnswer.classList.add("button", "answer")
+                    newAnswer.textContent = answer.text
+                    if (answer.correct) {
+                        newAnswer.dataset.correct = answer.correct
+                    }
+                    $answersContainer.appendChild(newAnswer)
+
+                    newAnswer.addEventListener("click", selectAnswer)
+                })
+            }
+
+            function resetState(){
+                while($answersContainer.firstChild){
+                    $answersContainer.removeChild($answersContainer.firstChild)   
+                }
+                
+                document.body.removeAttribute("class")
+                $nextQuestionButton.classList.add("hide")
+            }
+
+            function selectAnswer(event){
+                const answerClicked = event.target
+                console.log(answerClicked)
+                if(answerClicked.dataset.correct){
+                    document.body.classList.add("correct")
+                    totalCorrect++
+                }else{
+                    document.body.classList.add("incorrect")
+                }
+
+                document.querySelectorAll(".answer").forEach(button=>{
+                    if(button.dataset.correct){
+                        button.classList.add("correct")
+                    }else{
+                        button.classList.add("incorrect")
+                    }
+
+                    // inabilita os outros botões
+                    button.disabled = true
+                })
+
+                $nextQuestionButton.classList.remove("hide")
+                currentQuestionIndex++
+            }
+
+            function finishGame(){
+                const totalQuestion = questions.length
+                const perfomance = Math.floor(totalCorrect * 100 / totalQuestion)
+
+                let message = ""
+
+                switch(true){
+                    case(perfomance >= 90):
+                        message = "Excelente :)"
+                        break
+                    case(perfomance >= 70):
+                        message = "Muito bom :)"
+                        break
+                    case(perfomance >= 50):
+                        message = "Bom"
+                        break
+                    default:
+                        message = "Pode melhorar :("
+                }
+
+                $questionsContainer.innerHTML = 
+                `
+                    <p class="final-message">
+                        Você acertou ${totalCorrect} de ${questions.length} questões!
+                        <span>Resultado: ${message} </span>
+                    </p>
+
+                    <button onclick=window.location.reload() class="button">
+                        Refazer teste
+                    </button>
+                `
+            }
+        </script>
+    </div>
+</body>
+</html>
